@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<head>
+<style>
+h2 {
+        color: #1A8C52;
+}
+</style>
+</head>
+<body>
+<center><H2>Bubble Chart for Airports</H2></center>
+<button id="combine">Combine</button>
+<button id="split"> Split</button>
+<br>
+<P> The bubbles are displayed based on the TimeZone they belong to based on the input dataset. Press combine to see all the aiports without TimeZone split. Press split button to split again. </P>
+</body>
+<svg width="6000" height="1000" font-family="sans-serif" font-size="10" text-anchor="middle"></svg>
+<script src=".//d3/d3.v4.min.js"></script>
+<script>
+var height = 1000, width = 6000;
+var radius=d3.scaleSqrt().domain([1,14219]).range([1,30])
+var color = d3.scaleOrdinal(d3.schemeCategory20b);
+var svg = d3.select("svg")
+    .append("svg")
+	.attr("height",height)
+	.attr("width",width)
+	.append("g")
+	.attr("transform","translate(0,0)");
+
+	var forceXsep = d3.forceX(function(d){
+	var continent = d.tz_dataset_timezone.split('/');
+	if( continent[0]=== 'America'){
+	return 500
+	}
+	else if( continent[0]=== 'Europe'){
+	return 1450
+	}
+	else if( continent[0]=== 'Pacific'){
+	return 1925
+	}
+	else if( continent[0]=== 'Atlantic'){
+	return 2200
+	}
+	else if( continent[0]=== 'Africa'){
+	return 2700
+	}
+	else if( continent[0]=== 'Indian'){
+	return 3200
+	}
+	else if( continent[0]=== 'Asia'){
+	return 3700
+	}
+	else if( continent[0]=== 'Antarctica'){
+	return 4200
+	}
+	else if( continent[0]=== 'Australia'){
+	return 4500
+	}
+	else 
+	return 5000
+	}).strength(0.1);
+	
+	var forceY = d3.forceY(height/2).strength(0.1)
+	var forceX = d3.forceX(800).strength(0.1)
+	
+	var forceColloide=d3.forceCollide(function(d){
+	return radius(d.altitude)+1})
+	
+	var simulation=d3.forceSimulation()
+	.force("x",forceXsep)
+	.force("y",forceY)
+	.force("collide",forceColloide)
+	
+d3.queue()
+	.defer(d3.csv,".//dataset/airport.csv")
+	.await(ready);
+
+
+  
+function ready(error,datapoints){
+var circles=svg.selectAll(".airport")
+	.data(datapoints)
+	.enter().append("circle")
+	.attr("class","airport")
+	.attr("r", function(d){
+	return radius(d.altitude)
+	})
+	.style("fill", function(d) { return color(d.iata); })
+	.on('click', function(d){
+	console.log(d)
+	})
+	.on('mouseover', handleMouseOver)
+    .on("mouseout", handleMouseOut);
+	
+	function handleMouseOver(d, i) { 
+	       d3.select(this).attr({
+              fill: "orange",
+              r: radius * 2
+            });
+
+            // Specify where to put label of text
+ 		svg.append("text")
+        .attr("y", d.y)
+        .attr("x",d.x)
+        .attr("text-anchor", "middle")
+		.style("font-size", "14px")
+		.style("fill", "yellow")
+		.attr("id","t")
+		.style("stroke", "red")
+        .text(d.name)
+		}
+
+    function handleMouseOut(d, i) {
+	       d3.select(this).attr({
+              fill: "red",
+              r: radius
+            });
+            // Select text by id and then remove
+            d3.select("#t").remove();  // Remove text location
+          }
+	
+	d3.select("#split").on('click',function(){
+		simulation
+		.force("x",forceXsep)
+		.alphaTarget(0.1)
+		.restart()
+	})
+	svg.append("text")
+        .attr("y", 5)
+        .attr("x",500)
+        .attr("dy", 10)
+        .attr("text-anchor", "middle")
+		.style("font-size", "18px")
+		.style("fill", "darkOrange")
+        .text("American TimeZone Airports"); 
+
+	svg.append("text")
+        .attr("y", 5)
+        .attr("x",1450)
+        .attr("dy", 10)
+        .attr("text-anchor", "middle")
+		.style("font-size", "18px")
+		.style("fill", "purple")
+        .text("Europian TimeZone Airports"); 
+	svg.append("text")
+        .attr("y", 5)
+        .attr("x",1925)
+        .attr("dy", 10)
+        .attr("text-anchor", "middle")
+		.style("font-size", "18px")
+		.style("fill", "darkOrange")
+        .text("Pacific TimeZone Airports"); 
+	svg.append("text")
+        .attr("y", 5)
+        .attr("x",2200)
+        .attr("dy", 10)
+        .attr("text-anchor", "middle")
+		.style("font-size", "18px")
+		.style("fill", "red")
+        .text("Atlantic TimeZone Airports"); 
+	svg.append("text")
+        .attr("y", 5)
+        .attr("x",2700)
+        .attr("dy", 10)
+        .attr("text-anchor", "middle")
+		.style("font-size", "18px")
+		.style("fill", "darkOrange")
+        .text("African TimeZone Airports"); 
+	svg.append("text")
+        .attr("y", 5)
+        .attr("x",3200)
+        .attr("dy", 10)
+        .attr("text-anchor", "middle")
+		.style("font-size", "18px")
+		.style("fill", "brown")
+        .text("Indian  TimeZone Airports"); 
+	svg.append("text")
+        .attr("y", 5)
+        .attr("x",3700)
+        .attr("dy", 10)
+        .attr("text-anchor", "middle")
+		.style("font-size", "18px")
+		.style("fill", "darkOrange")
+        .text("Asian TimeZone Airports"); 
+	svg.append("text")
+        .attr("y", 5)
+        .attr("x",4200)
+        .attr("dy", 10)
+        .attr("text-anchor", "middle")
+		.style("font-size", "18px")
+		.style("fill", "blue")
+        .text("Antarctican TimeZone Airports"); 
+	svg.append("text")
+        .attr("y", 5)
+        .attr("x",4500)
+        .attr("dy", 10)
+        .attr("text-anchor", "middle")
+		.style("font-size", "18px")
+		.style("fill", "darkOrange")
+        .text("Australian TimeZone Airports"); 
+	svg.append("text")
+        .attr("y", 5)
+        .attr("x",5000)
+        .attr("dy", 10)
+        .attr("text-anchor", "middle")
+		.style("font-size", "18px")
+		.style("fill", "red")
+        .text("Not classified"); 
+		
+
+	d3.select("#combine").on('click',function(){
+	simulation
+	.force("x",d3.forceX(800).strength(0.1))
+	.alphaTarget(0.1)
+	.restart()
+	})
+	
+	simulation.nodes(datapoints)
+	.on('tick',ticked)
+	
+	function ticked(){
+	circles
+	.attr("cx",function(d){
+	return d.x
+	})
+	.attr("cy",function(d){
+	return d.y
+	})
+	}
+}
+</script>
+</html>

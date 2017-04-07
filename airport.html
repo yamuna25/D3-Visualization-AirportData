@@ -29,19 +29,19 @@ html, body, #map {
 
 </style>
 <div id="map"></div>
-<script src="sensor"></script>
-<script src="d3.v3.min.js"></script>
+<script src=".//dataset/sensor.txt"></script>
+<script src=".//d3/d3.v3.min.js"></script>
 <script>
 
 // Create the Google Map…
-var map = new google.maps.Map(d3.select("#map").node(), {
-  zoom: 8,
-  center: new google.maps.LatLng(37.76487, -122.41948),
+var googlemap = new google.maps.Map(d3.select("#map").node(), {
+  zoom: 2,
+  center: new google.maps.LatLng(31.2618,34.8092),
   mapTypeId: google.maps.MapTypeId.TERRAIN
 });
 
 // Load the station data. When the data comes back, create an overlay.
-d3.csv("data.csv", function(error, data) {
+d3.csv(".//dataset/airport.csv", function(error, data) {
   if (error) throw error;
 
   var overlay = new google.maps.OverlayView();
@@ -57,26 +57,30 @@ d3.csv("data.csv", function(error, data) {
       var projection = this.getProjection(),
           padding = 10;
 
-      var marker = layer.selectAll("svg")
+      var flightmarker = layer.selectAll("svg")
           .data(data)
           .each(transform) // update existing markers
           .enter().append("svg")
           .each(transform)
           .attr("class", "marker");
 
+
       // Add a circle.
-      marker.append("circle")
+      flightmarker.append("circle")
           .attr("r", 4.5)
           .attr("cx", padding)
           .attr("cy", padding);
 
+
       // Add a label.
-      marker.append("text")
+      flightmarker.append("text")
           .attr("x", padding + 7)
           .attr("y", padding)
           .attr("dy", ".31em")
-          .text(function(d) { return d.iata; });
-
+ 		  .style("font-size", "12px")
+		.style("fill", "#ff9900")
+         .text(function(d) { return d.iata; });
+		  
       function transform(d) {
         d = new google.maps.LatLng(d.latitude, d.longitude);
         d = projection.fromLatLngToDivPixel(d);
@@ -88,7 +92,7 @@ d3.csv("data.csv", function(error, data) {
   };
 
   // Bind our overlay to the map…
-  overlay.setMap(map);
+  overlay.setMap(googlemap);
 });
 
 </script>
