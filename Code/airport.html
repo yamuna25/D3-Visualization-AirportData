@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<style>
+html, body, #map {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.airport, .airport svg {
+  position: absolute;
+}
+.airport svg {
+  width: 60px;
+  height: 20px;
+  padding-right: 100px;
+  font: 10px sans-serif;
+}
+.airport circle {
+  fill: brown;
+  stroke: black;
+  stroke-width: 1.5px;
+}
+
+</style>
+<div id="map"></div>
+<script src="//maps.google.com/maps/api/js?sensor=true"></script>
+<script src=".//d3/d3.v3.min.js"></script>
+<script>
+
+// Creating Google Map
+var googlemap = new google.maps.Map(d3.select("#map").node(), {
+  zoom: 3,
+  // assigning the zoom quotient on the first load
+  center: new google.maps.LatLng(44.8807983398, -63.5085983276),
+  // assigning the center coordinates when map loads first. This location has Halifax as the center.
+  mapTypeId: google.maps.MapTypeId.TERRAIN
+});
+
+// Loading the airport dataset
+d3.csv(".//dataset/airport.csv", function(error, data) {
+  if (error) throw error;
+
+  var overlay = new google.maps.OverlayView();
+
+// Adding the container when overlay is added to map
+  overlay.onAdd = function() {
+    var layer = d3.select(this.getPanes().overlayLayer).append("div")
+        .attr("class", "airport");
+
+    // Drawing each circle or marker as a separate SVG element
+    overlay.draw = function() {
+      var projection = this.getProjection(),
+          padding = 10;
+
+      var flightmarker = layer.selectAll("svg")
+          .data(data)
+          .each(transform) 
+          .enter().append("svg")
+          .each(transform)
+          .attr("class", "marker");
+
+
+      // Adding a circle as marker
+      flightmarker.append("circle")
+          .attr("r", 4.5)
+          .attr("cx", padding)
+          .attr("cy", padding);
+
+
+      // Adding a lable to each marker on the map
+      flightmarker.append("text")
+          .attr("x", padding + 7)
+          .attr("y", padding)
+          .attr("dy", ".31em")
+ 		  .style("font-size", "12px")
+		.style("fill", "#ff9900")
+         .text(function(d) { return d.iata; });
+		  
+      function transform(d) {
+        d = new google.maps.LatLng(d.latitude, d.longitude);
+        d = projection.fromLatLngToDivPixel(d);
+        return d3.select(this)
+            .style("left", (d.x - padding) + "px")
+            .style("top", (d.y - padding) + "px");
+      }
+    };
+  };
+
+  // Binding the overlay to map
+  overlay.setMap(googlemap);
+});
+
+</script>
